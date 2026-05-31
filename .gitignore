@@ -1,0 +1,9 @@
+# Local Environment Ignores
+backend/venv/
+backend/__pycache__/
+backend/rejectioniq.db
+frontend/node_modules/
+frontend/dist/
+.DS_Store
+uploads/
+*.log
