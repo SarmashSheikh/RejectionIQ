@@ -28,7 +28,7 @@ jobs:
       - name: Install Mobile App Dependencies
         run: |
           cd mobile-app
-          npm install
+          npm install --legacy-peer-deps
 
       - name: Build Mobile App Web Bundle
         run: |
