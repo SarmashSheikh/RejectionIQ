@@ -4,10 +4,6 @@ from sqlalchemy import Column, Integer, String, Float, Boolean, Text, Date, Date
 from sqlalchemy.orm import relationship
 from database.database import Base
 
-
-from sqlalchemy.dialects.postgresql import ARRAY
-
-
 class User(Base):
     __tablename__ = "users"
 
@@ -21,9 +17,9 @@ class User(Base):
     graduation_year = Column(Integer, nullable=True)
     internship_count = Column(Integer, default=0)
     project_count = Column(Integer, default=0)
-    skills = Column(ARRAY(String), default=list)
-    target_companies = Column(ARRAY(String), default=list)
-    target_roles = Column(ARRAY(String), default=list)
+    skills = Column(JSON, default=list)
+    target_companies = Column(JSON, default=list)
+    target_roles = Column(JSON, default=list)
     resume_path = Column(String(255), nullable=True)
     resume_text = Column(Text, nullable=True)
     avatar_url = Column(String(255), nullable=True)
@@ -74,8 +70,8 @@ class Rejection(Base):
     diagnosed_cause = Column(Text, nullable=True)
     confidence_score = Column(Float, nullable=True)
     gap_score = Column(Float, nullable=True)
-    missing_keywords = Column(ARRAY(String), default=list)
-    matching_keywords = Column(ARRAY(String), default=list)
+    missing_keywords = Column(JSON, default=list)
+    matching_keywords = Column(JSON, default=list)
     notes = Column(Text, nullable=True)
     status = Column(String(50), default="pending")
     diagnosis_data = Column(JSON, nullable=True)
@@ -117,7 +113,7 @@ class PeerProfile(Base):
     cgpa = Column(Float, nullable=True)
     internship_count = Column(Integer, nullable=True)
     project_count = Column(Integer, nullable=True)
-    skills = Column(ARRAY(String), default=list)
+    skills = Column(JSON, default=list)
     rejection_stage = Column(String(50), nullable=True)
     source = Column(String(50), default="synthetic")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
