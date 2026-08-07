@@ -1,13 +1,10 @@
 import logging
 import threading
-import spacy
-from sentence_transformers import SentenceTransformer
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 logger = logging.getLogger(__name__)
 
 class MLModels:
-    """Singleton for loading ML models exactly once on startup."""
+    """Singleton for loading ML models safely on startup with robust fallbacks."""
     _instance = None
     _lock = threading.Lock()
     
@@ -23,26 +20,42 @@ class MLModels:
     def load_models(self):
         with self._lock:
             if not self.loaded:
-                logger.info("Loading SentenceTransformer (all-MiniLM-L6-v2)...")
-                self.sbert = SentenceTransformer('all-MiniLM-L6-v2')
-                
-                logger.info("Loading spaCy model...")
+                # 1. Try loading SentenceTransformer
                 try:
-                    self.nlp = spacy.load("en_core_web_md")
-                except OSError:
+                    from sentence_transformers import SentenceTransformer
+                    logger.info("Loading SentenceTransformer (all-MiniLM-L6-v2)...")
+                    self.sbert = SentenceTransformer('all-MiniLM-L6-v2')
+                except Exception as e:
+                    logger.warning(f"SentenceTransformer optional load skipped: {e}")
+                    self.sbert = None
+                
+                # 2. Try loading spaCy
+                try:
+                    import spacy
+                    logger.info("Loading spaCy model...")
                     try:
-                        self.nlp = spacy.load("en_core_web_sm")
+                        self.nlp = spacy.load("en_core_web_md")
                     except OSError:
-                        logger.warning("spaCy model not found. Downloading...")
-                        from spacy.cli import download
-                        download("en_core_web_sm")
-                        self.nlp = spacy.load("en_core_web_sm")
-                    
-                logger.info("Loading VADER Sentiment Analyzer...")
-                self.analyzer = SentimentIntensityAnalyzer()
+                        try:
+                            self.nlp = spacy.load("en_core_web_sm")
+                        except OSError:
+                            from spacy.cli import download
+                            download("en_core_web_sm")
+                            self.nlp = spacy.load("en_core_web_sm")
+                except Exception as e:
+                    logger.warning(f"spaCy model optional load skipped: {e}")
+                    self.nlp = None
+
+                # 3. Try loading VADER Sentiment Analyzer
+                try:
+                    from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+                    logger.info("Loading VADER Sentiment Analyzer...")
+                    self.analyzer = SentimentIntensityAnalyzer()
+                except Exception as e:
+                    logger.warning(f"VADER Sentiment Analyzer load error: {e}")
+                    self.analyzer = None
                     
                 self.loaded = True
-                logger.info("All ML Models loaded successfully.")
+                logger.info("ML Models initialized (with available backends).")
 
 ml_models = MLModels()
-
