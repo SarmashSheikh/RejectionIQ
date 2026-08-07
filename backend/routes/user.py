@@ -26,6 +26,14 @@ def update_onboarding_profile(
     
     db.commit()
     db.refresh(current_user)
+    
+    import json
+    if isinstance(current_user.dream_skills, str):
+        try:
+            current_user.dream_skills = json.loads(current_user.dream_skills)
+        except Exception:
+            current_user.dream_skills = []
+            
     return current_user
 
 @router.post("/resume", response_model=schemas.UserResponse)
@@ -58,4 +66,11 @@ def upload_resume(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to parse resume: {str(e)}")
         
+    import json
+    if isinstance(current_user.dream_skills, str):
+        try:
+            current_user.dream_skills = json.loads(current_user.dream_skills)
+        except Exception:
+            current_user.dream_skills = []
+            
     return current_user

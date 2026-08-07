@@ -6,8 +6,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "RejectionIQ API"
     VERSION: str = "1.0.0"
     
-    # Database (PostgreSQL)
-    DATABASE_URL: str = "postgresql://postgres:YourNewPassword@localhost:5432/rejectioniq"
+    # Database (SQLite default for local setup, PostgreSQL supported via env)
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./rejectioniq.db")
     
     # JWT Auth
     SECRET_KEY: str = "super_secret_key_change_in_production"

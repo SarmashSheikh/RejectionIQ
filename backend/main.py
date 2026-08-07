@@ -78,16 +78,23 @@ async def startup_event():
                 if "selected_round" not in rej_columns:
                     conn.execute(text("ALTER TABLE rejections ADD COLUMN selected_round VARCHAR(100);"))
                     logger.info("Added 'selected_round' column to 'rejections' table.")
+                if "status" not in rej_columns:
+                    conn.execute(text("ALTER TABLE rejections ADD COLUMN status VARCHAR(50) DEFAULT 'pending';"))
+                    logger.info("Added 'status' column to 'rejections' table.")
+                if "diagnosis_data" not in rej_columns:
+                    conn.execute(text("ALTER TABLE rejections ADD COLUMN diagnosis_data TEXT;"))
+                    logger.info("Added 'diagnosis_data' column to 'rejections' table.")
                 conn.commit()
             logger.info("Rejections database columns migration completed.")
     except Exception as e:
         logger.error(f"Database migration error: {e}")
 
-    logger.info("Loading ML Models (Singleton)...")
-    # Call directly; if it fails, the app should fail to start as per USER request
+    logger.info("Starting ML Model loading in background thread...")
+    import threading
     from ml.model_loader import ml_models
-    ml_models.load_models()
-    logger.info("ML Models loaded successfully.")
+    # Load ML models in a daemon thread so startup remains non-blocking
+    threading.Thread(target=ml_models.load_models, daemon=True).start()
+    logger.info("ML Model background loading thread started.")
 
 @app.get("/")
 def read_root():

@@ -131,12 +131,6 @@ export default function Dashboard() {
     return "bg-slate-50 border border-slate-100 text-slate-700 font-extrabold text-[10px]";
   };
 
-  // Color mapper for match scores
-  const getScoreColorClass = (score) => {
-    if (score >= 75) return "text-emerald-600 font-bold";
-    if (score >= 55) return "text-amber-600 font-bold";
-    return "text-rose-600 font-bold";
-  };
 
   // Safe username extraction
   const userName = user?.email ? user.email.split('@')[0] : "Technologist";
@@ -378,9 +372,8 @@ export default function Dashboard() {
                     <thead>
                       <tr className="border-b border-slate-100 bg-slate-50/50 text-[10px] text-slate-400 uppercase tracking-widest font-extrabold">
                         <th className="py-3 px-6">Company</th>
-                        <th className="py-3 px-3">Role</th>
-                        <th className="py-3 px-3 text-center">Stage</th>
-                        <th className="py-3 px-6 text-right">SBERT Score</th>
+                        <th className="py-3 px-6">Role</th>
+                        <th className="py-3 px-6 text-right">Stage</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-150">
@@ -396,8 +389,6 @@ export default function Dashboard() {
                           "bg-indigo-100 text-indigo-700 border-indigo-200"
                         ][colorCode];
 
-                        const roundedScore = r.gap_score ? Math.round(r.gap_score) : 63;
-
                         return (
                           <tr key={idx} className="hover:bg-slate-50/30 transition-colors text-xs font-bold text-slate-800">
                             <td className="py-4 px-6 flex items-center gap-3">
@@ -406,14 +397,11 @@ export default function Dashboard() {
                               </div>
                               <span className="font-extrabold text-slate-900">{r.company_name}</span>
                             </td>
-                            <td className="py-4 px-3 text-slate-500 font-semibold">{r.role}</td>
-                            <td className="py-4 px-3 text-center">
-                              <span className={`px-2.5 py-0.5 rounded-full ${getStageBadgeClass(r.rejection_stage)}`}>
+                            <td className="py-4 px-6 text-slate-500 font-semibold">{r.role}</td>
+                            <td className="py-4 px-6 text-right">
+                              <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full whitespace-nowrap ${getStageBadgeClass(r.rejection_stage)}`}>
                                 {r.rejection_stage || "ATS Filter"}
                               </span>
-                            </td>
-                            <td className={`py-4 px-6 text-right ${getScoreColorClass(roundedScore)}`}>
-                              {roundedScore}%
                             </td>
                           </tr>
                         );
