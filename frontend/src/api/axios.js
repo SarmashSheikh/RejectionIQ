@@ -1,7 +1,11 @@
 import axios from 'axios';
 
-// You can swap this out with the actual prod URL later
-const baseURL = `http://${window.location.hostname}:8000/api`;
+// Dynamic API endpoint pointing to live Render backend by default
+const baseURL = import.meta.env.VITE_API_URL || (
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:8000/api'
+    : 'https://rejectioniq.onrender.com/api'
+);
 
 const api = axios.create({
   baseURL,
