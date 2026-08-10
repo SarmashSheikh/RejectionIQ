@@ -100,6 +100,10 @@ async def startup_event():
 def read_root():
     return {"message": "Welcome to RejectionIQ API", "status": "online"}
 
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok", "service": "RejectionIQ API"}
+
 # Future Router Includes:
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 from routes import user
