@@ -27,7 +27,7 @@ jobs:
       - name: 🟢 Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: 🐍 Setup Python Environment
         uses: actions/setup-python@v5
@@ -117,7 +117,7 @@ jobs:
       - name: 🟢 Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: 🐘 Setup Gradle Environment
         uses: gradle/actions/setup-gradle@v4
@@ -125,7 +125,7 @@ jobs:
       - name: 📦 Install Mobile Dependencies & Sync Capacitor
         run: |
           cd mobile-app
-          npm install --legacy-peer-deps
+          npm install --legacy-peer-deps --engine-strict=false
           npm run build
           npx cap sync android
 
