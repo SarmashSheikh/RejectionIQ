@@ -114,6 +114,9 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: 📱 Setup Android SDK & Accept Licenses
+        uses: android-actions/setup-android@v3
+
       - name: 🟢 Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
