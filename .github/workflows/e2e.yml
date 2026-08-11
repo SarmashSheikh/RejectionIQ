@@ -128,7 +128,9 @@ jobs:
 
       - name: 🔨 Compile Android Debug APK Package
         run: |
-          find mobile-app/android -type f -exec sed -i 's/\r$//' {} + || true
+          sed -i 's/\r$//' mobile-app/android/gradlew || true
+          sed -i 's/\r$//' mobile-app/android/gradle/wrapper/gradle-wrapper.properties || true
+          sed -i 's/\r$//' mobile-app/android/gradle.properties || true
           cd mobile-app/android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
