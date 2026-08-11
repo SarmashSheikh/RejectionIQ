@@ -119,6 +119,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: 🐘 Setup Gradle Environment
+        uses: gradle/actions/setup-gradle@v4
+
       - name: 📦 Install Mobile Dependencies & Sync Capacitor
         run: |
           cd mobile-app
@@ -128,9 +131,6 @@ jobs:
 
       - name: 🔨 Compile Android Debug APK Package
         run: |
-          sed -i 's/\r$//' mobile-app/android/gradlew || true
-          sed -i 's/\r$//' mobile-app/android/gradle/wrapper/gradle-wrapper.properties || true
-          sed -i 's/\r$//' mobile-app/android/gradle.properties || true
           cd mobile-app/android
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace
