@@ -24,10 +24,6 @@ export default function Login() {
       setErrorMsg('Email address is required.');
       return;
     }
-    if (!email.includes('@gmail.com')) {
-      setErrorMsg('Only valid Gmail addresses (@gmail.com) are allowed.');
-      return;
-    }
     if (!password) {
       setErrorMsg('Password is required.');
       return;

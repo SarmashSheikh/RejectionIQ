@@ -13,7 +13,6 @@ const schema = yup.object({
   email: yup
     .string()
     .email('Please enter a valid email address')
-    .matches(/@gmail\.com$/, 'Only Gmail addresses are allowed')
     .required('Email is required'),
   password: yup
     .string()

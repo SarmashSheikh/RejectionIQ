@@ -1,0 +1,15 @@
+{
+  "valid_user": {
+    "email": "demo@rejectioniq.com",
+    "password": "demo1234",
+    "full_name": "Arjun Shaik",
+    "college": "BITS Pilani",
+    "cgpa": 8.1
+  },
+  "test_rejection": {
+    "company": "Google",
+    "role": "Software Engineer",
+    "stage": "Technical Interview Round 2",
+    "feedback": "Struggled with System Design dynamic scalability and graph algorithms."
+  }
+}

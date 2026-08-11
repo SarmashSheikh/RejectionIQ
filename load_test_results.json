@@ -1,0 +1,68 @@
+{
+  "test_info": {
+    "target_host": "http://127.0.0.1:8000",
+    "virtual_users": 100,
+    "target_duration_sec": 60,
+    "actual_duration_sec": 60.27,
+    "timestamp": "2026-08-07T13:54:55.551486"
+  },
+  "throughput": {
+    "total_requests": 22898,
+    "successful_requests": 9157,
+    "failed_requests": 13741,
+    "requests_per_second": 379.95,
+    "success_rate_pct": 39.99,
+    "failure_rate_pct": 60.01
+  },
+  "response_time_ms": {
+    "avg": 260.85,
+    "min": 9.29,
+    "max": 510.2,
+    "median_p50": 256.09,
+    "p90": 302.46,
+    "p95": 319.03,
+    "p99": 371.09
+  },
+  "status_codes": {
+    "200": 9157,
+    "404": 4581,
+    "401": 9160
+  },
+  "endpoint_breakdown": {
+    "Root Welcome": {
+      "count": 4578,
+      "rps": 75.96,
+      "min_ms": 12.8,
+      "avg_ms": 260.04,
+      "max_ms": 501.67
+    },
+    "Health Check": {
+      "count": 4579,
+      "rps": 75.98,
+      "min_ms": 19.4,
+      "avg_ms": 260.02,
+      "max_ms": 501.7
+    },
+    "User Profile": {
+      "count": 4581,
+      "rps": 76.01,
+      "min_ms": 9.29,
+      "avg_ms": 248.22,
+      "max_ms": 492.53
+    },
+    "Rejections List": {
+      "count": 4580,
+      "rps": 76.0,
+      "min_ms": 29.69,
+      "avg_ms": 268.06,
+      "max_ms": 510.01
+    },
+    "Pattern Analysis": {
+      "count": 4580,
+      "rps": 76.0,
+      "min_ms": 31.2,
+      "avg_ms": 267.92,
+      "max_ms": 510.2
+    }
+  }
+}

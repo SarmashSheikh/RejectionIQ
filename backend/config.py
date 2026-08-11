@@ -2,12 +2,15 @@ import os
 from pydantic_settings import BaseSettings
 from typing import Optional
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DB_PATH = os.path.join(BASE_DIR, "rejectioniq.db").replace("\\", "/")
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = "RejectionIQ API"
     VERSION: str = "1.0.0"
     
     # Database (SQLite default for local setup, PostgreSQL supported via env)
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./rejectioniq.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}")
     
     # JWT Auth
     SECRET_KEY: str = "super_secret_key_change_in_production"

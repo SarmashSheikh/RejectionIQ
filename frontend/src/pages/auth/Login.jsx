@@ -11,7 +11,6 @@ const schema = yup.object({
   email: yup
     .string()
     .email('Please enter a valid email address')
-    .matches(/@gmail\.com$/, 'Only Gmail addresses are allowed')
     .required('Email is required'),
   password: yup.string().required('Password is required'),
 }).required();
@@ -58,7 +57,7 @@ export default function Login() {
               Welcome back
             </h2>
             <p className="mt-2 text-sm text-slate-500 font-medium">
-              Enter your Gmail address to access RejectionIQ.
+              Enter your email address to access RejectionIQ.
             </p>
           </div>
 
@@ -79,7 +78,7 @@ export default function Login() {
             )}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700">Gmail Address</label>
+                <label className="block text-sm font-bold text-slate-700">Email Address</label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-slate-400" />
