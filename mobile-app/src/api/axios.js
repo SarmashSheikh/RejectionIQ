@@ -5,6 +5,7 @@ const baseURL = import.meta.env.VITE_API_URL || 'https://rejectioniq.onrender.co
 
 const api = axios.create({
   baseURL,
+  timeout: 15000,
 });
 
 // Interceptor to include token on requests
@@ -19,16 +20,12 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor to handle 401 unauthorized errors
+// Interceptor to handle 401 unauthorized errors cleanly without page reload
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
-      // Redirect to mobile app login path
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
-      }
     }
     return Promise.reject(error);
   }

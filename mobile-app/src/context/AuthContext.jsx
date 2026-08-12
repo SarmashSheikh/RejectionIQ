@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     resilience_score: 7.2
   };
 
-  // Check auth status on load
+  // Check auth status on initial load
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
@@ -39,29 +39,17 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-      if (token && token.startsWith('offline_token_')) {
-        const savedUser = localStorage.getItem('offline_user_data');
-        if (savedUser) {
-          try {
-            setUser(JSON.parse(savedUser));
-            setLoading(false);
-            return;
-          } catch (e) {}
-        }
-      }
       if (token) {
         try {
           const res = await api.get('/auth/me');
           setUser(res.data);
         } catch (error) {
-          console.error("Token invalid or expired", error);
-          const savedUser = localStorage.getItem('offline_user_data');
-          if (savedUser) {
-            setUser(JSON.parse(savedUser));
-          } else {
-            localStorage.removeItem('token');
-          }
+          console.error("Session check failed:", error);
+          localStorage.removeItem('token');
+          setUser(null);
         }
+      } else {
+        setUser(null);
       }
       setLoading(false);
     };
@@ -71,7 +59,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const cleanEmail = (email || '').toLowerCase().trim();
     
-    // Instant client-side fallback for demo account
+    // Instant fallback for demo account
     if (cleanEmail === 'demo@rejectioniq.com' && (password === 'demo1234' || !password)) {
       localStorage.setItem('token', 'demo_access_token_rejectioniq');
       setUser(DEMO_USER);
@@ -84,63 +72,44 @@ export const AuthProvider = ({ children }) => {
       formData.append('password', password);
       
       const res = await api.post('/auth/login', formData, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        timeout: 8000
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       
-      localStorage.setItem('token', res.data.access_token);
+      // Store token from real backend
+      const token = res.data.access_token;
+      localStorage.setItem('token', token);
       
-      // Fetch user profile
-      const userRes = await api.get('/auth/me');
+      // Fetch exact user data stored in the backend database
+      const userRes = await api.get('/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
       setUser(userRes.data);
       return { success: true };
     } catch (error) {
-      // If network error / timeout / offline / cold-start occurs, log user in with resilient session
-      if (!error.response || error.code === 'ERR_NETWORK' || error.message?.includes('Network Error') || error.code === 'ECONNABORTED') {
-        const nameParts = cleanEmail.split('@')[0].split(/[._-]/);
-        const formattedName = nameParts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ') || 'User';
-        const offlineUser = {
-          id: 999,
-          full_name: formattedName,
-          email: cleanEmail,
-          cgpa: 8.2,
-          college: 'University',
-          branch: 'Computer Science',
-          graduation_year: 2025,
-          internship_count: 1,
-          project_count: 3,
-          skills: ['Python', 'React', 'SQL', 'FastAPI'],
-          target_companies: ['Google', 'Microsoft', 'Amazon'],
-          target_roles: ['Software Engineer'],
-          is_onboarded: true,
-          is_verified: true,
-          streak_count: 3,
-          total_rejections: 4,
-          resilience_score: 7.8
-        };
-        localStorage.setItem('token', `offline_token_${Date.now()}`);
-        localStorage.setItem('offline_user_data', JSON.stringify(offlineUser));
-        setUser(offlineUser);
-        return { success: true };
-      }
-
+      console.error("Login attempt failed:", error);
+      const detailMsg = error.response?.data?.detail;
       return { 
         success: false, 
-        error: error.response?.data?.detail || 'Login failed' 
+        error: detailMsg || 'Login failed. Please check your credentials or network connection.' 
       };
     }
   };
 
   const register = async (userData) => {
     try {
-      const res = await api.post('/auth/register', userData);
+      const cleanData = { ...userData, email: (userData.email || '').toLowerCase().trim() };
+      const res = await api.post('/auth/register', cleanData);
+      if (res.data && res.data.access_token) {
+        localStorage.setItem('token', res.data.access_token);
+        const userRes = await api.get('/auth/me');
+        setUser(userRes.data);
+        return { success: true };
+      }
       if (res.data && res.data.status === 'verification_pending') {
         return { success: true, verificationPending: true, email: res.data.email };
       }
-      if (res.data) {
-        return await login(userData.email, userData.password);
-      }
-      return { success: true };
+      return await login(cleanData.email, cleanData.password);
     } catch (error) {
       return { 
         success: false, 
@@ -151,11 +120,15 @@ export const AuthProvider = ({ children }) => {
 
   const verifyOtp = async (email, otp) => {
     try {
-      const res = await api.post('/auth/verify-otp', { email, otp });
-      localStorage.setItem('token', res.data.access_token);
+      const cleanEmail = (email || '').toLowerCase().trim();
+      const res = await api.post('/auth/verify-otp', { email: cleanEmail, otp });
+      const token = res.data.access_token;
+      localStorage.setItem('token', token);
       
-      // Fetch user profile
-      const userRes = await api.get('/auth/me');
+      // Fetch exact user profile from database
+      const userRes = await api.get('/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setUser(userRes.data);
       return { success: true };
     } catch (error) {
@@ -168,7 +141,8 @@ export const AuthProvider = ({ children }) => {
 
   const resendOtp = async (email) => {
     try {
-      await api.post('/auth/resend-otp', { email });
+      const cleanEmail = (email || '').toLowerCase().trim();
+      await api.post('/auth/resend-otp', { email: cleanEmail });
       return { success: true };
     } catch (error) {
       return {
