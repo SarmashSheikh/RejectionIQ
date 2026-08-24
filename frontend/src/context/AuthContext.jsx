@@ -78,11 +78,17 @@ export const AuthProvider = ({ children }) => {
       if (res.data && res.data.status === 'verification_pending') {
         return { success: true, verificationPending: true, email: res.data.email };
       }
-      // Auto login after register (fallback)
-      if (res.data) {
-        return await login(userData.email, userData.password);
+      if (res.data && res.data.access_token) {
+        localStorage.setItem('token', res.data.access_token);
+        try {
+          const userRes = await api.get('/auth/me');
+          setUser(userRes.data);
+        } catch (meErr) {
+          // Fallback user setting
+        }
+        return { success: true };
       }
-      return { success: true };
+      return await login(userData.email, userData.password);
     } catch (error) {
       return { 
         success: false, 
