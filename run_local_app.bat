@@ -7,7 +7,7 @@ echo.
 echo 1. Starting FastAPI Backend (Port 8000)...
 start "RejectionIQ Backend" cmd /k "cd /d %~dp0backend && uvicorn main:app --reload --host 127.0.0.1 --port 8000"
 
-echo 2. Starting Vite Application (Port 5173)...
+echo 2. Starting Vite Application (Port 5180)...
 start "RejectionIQ Web App" cmd /k "cd /d %~dp0mobile-app && npm run dev"
 
 echo.
@@ -15,7 +15,7 @@ echo Waiting for servers to initialize...
 timeout /t 4 >nul
 
 echo 3. Opening Application in Web Browser...
-start http://localhost:5173
+start http://localhost:5180
 
 echo.
 echo ========================================================
