@@ -16,24 +16,21 @@ export const getCandidateUrls = () => {
     candidates.push(localStorage.getItem('custom_api_url'));
   }
 
-  // 3. Detect platform and prioritize local PC server where database lives
+  // 3. Render cloud production backend (primary database for cross-device sync)
+  candidates.push(RENDER_URL);
+
+  // 4. Local dev fallbacks
   if (typeof window !== 'undefined') {
     const isCapacitorNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
     const userAgent = navigator.userAgent || '';
     const isAndroid = isCapacitorNative || /android/i.test(userAgent) || window.location.href.startsWith('capacitor://');
 
     if (isAndroid) {
-      // Android Emulator connects to Host PC local backend at 10.0.2.2:8000
       candidates.push('http://10.0.2.2:8000/api');
-      // Local Wi-Fi network IP for physical Android devices
-      candidates.push('http://10.234.193.54:8000/api');
     } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       candidates.push('http://localhost:8000/api');
     }
   }
-
-  // 4. Render cloud production backend fallback
-  candidates.push(RENDER_URL);
 
   // Return deduplicated array
   return Array.from(new Set(candidates));
