@@ -5,7 +5,7 @@ echo ========================================================
 echo.
 
 echo 1. Starting FastAPI Backend (Port 8000)...
-start "RejectionIQ Backend" cmd /k "cd /d %~dp0backend && uvicorn main:app --reload --host 127.0.0.1 --port 8000"
+start "RejectionIQ Backend" cmd /k "cd /d %~dp0backend && venv\Scripts\python -m uvicorn main:app --reload --host 127.0.0.1 --port 8000"
 
 echo 2. Starting Vite Desktop Web App (Port 5173)...
 start "RejectionIQ Web App" cmd /k "cd /d %~dp0frontend && npm run dev"
