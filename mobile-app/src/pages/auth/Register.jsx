@@ -48,7 +48,7 @@ export default function Register() {
 
     if (!fullName) return setErrorMsg('Full name is required.');
     if (!email) return setErrorMsg('Gmail address is required.');
-    if (!email.includes('@gmail.com')) return setErrorMsg('Only Gmail addresses are allowed.');
+    if (!email.toLowerCase().trim().endsWith('@gmail.com')) return setErrorMsg('Only valid Gmail addresses (@gmail.com) are allowed.');
     if (!password) return setErrorMsg('Password is required.');
     if (password.length < 8) return setErrorMsg('Password must be at least 8 characters.');
     if (password !== confirmPassword) return setErrorMsg('Passwords do not match.');

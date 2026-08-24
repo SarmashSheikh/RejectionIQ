@@ -28,6 +28,7 @@ class User(Base):
     resilience_score = Column(Float, default=5.0)
     is_onboarded = Column(Boolean, default=False)
     is_verified = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
     otp = Column(String(6), nullable=True)
     otp_expires_at = Column(DateTime, nullable=True)
     

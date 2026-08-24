@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileSearch, Calendar, BarChart2, User, Settings, LogOut, Zap } from 'lucide-react';
+import { LayoutDashboard, FileSearch, Calendar, BarChart2, User, FileText, Shield, LogOut, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
@@ -8,8 +8,9 @@ const navItems = [
   { icon: FileSearch, label: 'New Diagnosis', path: '/rejection/new/step1' },
   { icon: Calendar, label: 'Recovery Sprint', path: '/recovery' },
   { icon: BarChart2, label: 'Benchmarks', path: '/analytics' },
-  { icon: User, label: 'Profile', path: '/profile' },
-  { icon: Settings, label: 'Settings', path: '/settings' },
+  { icon: User, label: 'Career Profile', path: '/profile' },
+  { icon: FileText, label: 'Resume Vault', path: '/resume' },
+  { icon: Shield, label: 'Access & Security', path: '/settings' },
 ];
 
 export default function Sidebar() {

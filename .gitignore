@@ -9,3 +9,5 @@ frontend/dist/
 .DS_Store
 uploads/
 *.log
+*.env
+.env

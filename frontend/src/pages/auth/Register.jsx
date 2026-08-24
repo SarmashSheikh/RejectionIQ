@@ -13,6 +13,9 @@ const schema = yup.object({
   email: yup
     .string()
     .email('Please enter a valid email address')
+    .test('is-gmail', 'Only valid Gmail addresses (@gmail.com) are allowed', (value) => 
+      !value || value.toLowerCase().trim().endsWith('@gmail.com')
+    )
     .required('Email is required'),
   password: yup
     .string()

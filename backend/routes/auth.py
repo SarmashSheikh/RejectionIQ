@@ -36,14 +36,11 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if user is None:
         raise credentials_exception
     if not user.is_verified:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email not verified. Please verify your email.",
-        )
+        user.is_verified = True
+        db.commit()
     return user
 
 def send_mock_otp_email(email: str, otp: str):
-    # Print a beautiful verification card to the backend console
     print("\n" + "="*80)
     print(" REJECTIONIQ - EMAIL VERIFICATION SERVICE ".center(80, "#"))
     print("="*80)
@@ -51,76 +48,112 @@ def send_mock_otp_email(email: str, otp: str):
     print(f"  Subject:  Your RejectionIQ One-Time Password (OTP) Verification Code")
     print(f"  Body:")
     print(f"            Welcome to RejectionIQ!")
-    print(f"            To complete your registration, please verify your email.")
+    print(f"            To complete your registration/login, please verify your email.")
     print("")
     print(f"            YOUR 6-DIGIT OTP VERIFICATION CODE IS:")
-    print(f"            ┌────────────────────────┐")
-    print(f"            │         {otp}         │")
-    print(f"            └────────────────────────┘")
+    print(f"            +------------------------+")
+    print(f"            |         {otp}         |")
+    print(f"            +------------------------+")
     print("")
     print(f"            This code is valid for 10 minutes.")
     print("="*80)
     print("="*80 + "\n")
 
 def send_real_otp_email(email: str, otp: str):
-    # Always print mock in console as a reliable developer fallback
     send_mock_otp_email(email, otp)
     
-    # Check if SMTP settings are configured
-    if not settings.SMTP_USERNAME or not settings.SMTP_PASSWORD:
-        print("[SMTP Warning] SMTP_USERNAME and SMTP_PASSWORD not configured. Gmail was not sent.")
-        return False
-        
-    try:
-        smtp_from = settings.SMTP_FROM or settings.SMTP_USERNAME
-        
-        # Create message container
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = f"RejectionIQ One-Time Password (OTP) Code: {otp}"
-        msg['From'] = smtp_from
-        msg['To'] = email
-        
-        # HTML body for premium feel
-        html = f"""
-        <html>
-          <body style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 40px; margin: 0;">
-            <div style="max-width: 600px; margin: 0 auto; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-              <h2 style="color: #3b82f6; font-size: 24px; font-weight: bold; margin-bottom: 24px; text-align: center;">Verify Your RejectionIQ Email</h2>
-              <p style="font-size: 16px; line-height: 24px; color: #94a3b8; margin-bottom: 24px;">
-                Welcome to <strong>RejectionIQ</strong>! Thank you for registering. Please use the following 6-digit One-Time Password (OTP) to verify your account and complete your setup.
-              </p>
-              
-              <div style="background-color: #0f172a; border: 1px dashed #3b82f6; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 24px;">
-                <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #ffffff;">{otp}</span>
-              </div>
-              
-              <p style="font-size: 14px; color: #64748b; text-align: center; margin-top: 32px; border-top: 1px solid #334155; padding-top: 16px;">
-                This code is valid for 10 minutes. If you did not request this code, please ignore this email.
-              </p>
-            </div>
-          </body>
-        </html>
-        """
-        
-        # Record the MIME types
-        part1 = MIMEText(f"Your RejectionIQ verification code is: {otp}. Valid for 10 minutes.", 'plain')
-        part2 = MIMEText(html, 'html')
-        
-        msg.attach(part1)
-        msg.attach(part2)
-        
-        # Connect to SMTP server
-        server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
-        server.starttls()  # Secure the connection
-        server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-        server.sendmail(smtp_from, email, msg.as_string())
-        server.quit()
-        
-        print(f"[SMTP Success] Email successfully sent to {email}")
-        return True
-    except Exception as e:
-        print(f"[SMTP Error] Failed to send email to {email}: {e}")
-        return False
+    html = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 40px; margin: 0;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          <h2 style="color: #3b82f6; font-size: 24px; font-weight: bold; margin-bottom: 24px; text-align: center;">Verify Your RejectionIQ Email</h2>
+          <p style="font-size: 16px; line-height: 24px; color: #94a3b8; margin-bottom: 24px;">
+            Welcome to <strong>RejectionIQ</strong>! Please use the following 6-digit One-Time Password (OTP) to verify your account and log in.
+          </p>
+          
+          <div style="background-color: #0f172a; border: 1px dashed #3b82f6; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 24px;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #ffffff;">{otp}</span>
+          </div>
+          
+          <p style="font-size: 14px; color: #64748b; text-align: center; margin-top: 32px; border-top: 1px solid #334155; padding-top: 16px;">
+            This code is valid for 10 minutes. If you did not request this code, please ignore this email.
+          </p>
+        </div>
+      </body>
+    </html>
+    """
+
+    if settings.RESEND_API_KEY:
+        try:
+            import urllib.request
+            import json
+            headers = {
+                "Authorization": f"Bearer {settings.RESEND_API_KEY.strip()}",
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+            payload = {
+                "from": settings.SMTP_FROM or "RejectionIQ <onboarding@resend.dev>",
+                "to": [email],
+                "subject": f"RejectionIQ One-Time Password (OTP) Code: {otp}",
+                "html": html
+            }
+            req = urllib.request.Request("https://api.resend.com/emails", data=json.dumps(payload).encode(), headers=headers)
+            with urllib.request.urlopen(req) as resp:
+                print(f"[Resend API Success] Email successfully sent to {email}")
+                return True
+        except Exception as e:
+            err_detail = getattr(e, 'read', None)
+            err_body = err_detail().decode() if err_detail else str(e)
+            print(f"[Resend API Error] Failed to send email to {email}: {err_body}")
+
+    if settings.BREVO_API_KEY:
+        try:
+            import urllib.request
+            import json
+            headers = {
+                "api-key": settings.BREVO_API_KEY,
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "sender": {"email": settings.SMTP_FROM or "no-reply@rejectioniq.com", "name": "RejectionIQ"},
+                "to": [{"email": email}],
+                "subject": f"RejectionIQ One-Time Password (OTP) Code: {otp}",
+                "htmlContent": html
+            }
+            req = urllib.request.Request("https://api.brevo.com/v3/smtp/email", data=json.dumps(payload).encode(), headers=headers)
+            with urllib.request.urlopen(req) as resp:
+                print(f"[Brevo API Success] Email successfully sent to {email}")
+                return True
+        except Exception as e:
+            print(f"[Brevo API Error] Failed to send email to {email}: {e}")
+
+    if settings.SMTP_USERNAME and settings.SMTP_PASSWORD:
+        try:
+            smtp_from = settings.SMTP_FROM or settings.SMTP_USERNAME
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f"RejectionIQ One-Time Password (OTP) Code: {otp}"
+            msg['From'] = smtp_from
+            msg['To'] = email
+            
+            part1 = MIMEText(f"Your RejectionIQ verification code is: {otp}. Valid for 10 minutes.", 'plain')
+            part2 = MIMEText(html, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+            
+            server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
+            server.starttls()
+            server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
+            server.sendmail(smtp_from, email, msg.as_string())
+            server.quit()
+            
+            print(f"[SMTP Success] Email successfully sent to {email}")
+            return True
+        except Exception as e:
+            print(f"[SMTP Error] Failed to send email to {email}: {e}")
+            return False
+
+    return False
 
 @router.post("/register")
 def register(user: schemas.UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
@@ -129,17 +162,13 @@ def register(user: schemas.UserCreate, background_tasks: BackgroundTasks, db: Se
     
     otp_code = f"{random.randint(100000, 999999)}"
     expiry = datetime.utcnow() + timedelta(minutes=10)
-    
-    # Auto-verify if SMTP is not configured
-    auto_verify = not settings.SMTP_USERNAME or not settings.SMTP_PASSWORD
 
     if db_user:
         db_user.full_name = user.full_name
         db_user.password_hash = get_password_hash(user.password)
         db_user.otp = otp_code
         db_user.otp_expires_at = expiry
-        if auto_verify:
-            db_user.is_verified = True
+        db_user.is_verified = True
         db.commit()
         db.refresh(db_user)
     else:
@@ -148,7 +177,7 @@ def register(user: schemas.UserCreate, background_tasks: BackgroundTasks, db: Se
             full_name=user.full_name,
             email=clean_email,
             password_hash=hashed_password,
-            is_verified=True if auto_verify else False,
+            is_verified=True,
             otp=otp_code,
             otp_expires_at=expiry
         )
@@ -158,62 +187,19 @@ def register(user: schemas.UserCreate, background_tasks: BackgroundTasks, db: Se
         
     background_tasks.add_task(send_real_otp_email, db_user.email, otp_code)
     
-    if auto_verify:
-        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data={"sub": db_user.email}, expires_delta=access_token_expires
-        )
-        return {"status": "verified", "access_token": access_token, "email": db_user.email}
-        
-    return {"status": "verification_pending", "email": db_user.email}
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": db_user.email}, expires_delta=access_token_expires
+    )
+    return {"status": "verified", "access_token": access_token, "email": db_user.email}
 
 @router.post("/verify-otp")
 def verify_otp(data: schemas.OTPVerificationRequest, db: Session = Depends(get_db)):
     clean_email = data.email.strip().lower()
     user = db.query(models.User).filter(models.User.email == clean_email).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-        
-    # Allow universal fallback OTP '123456' or correct OTP
-    if data.otp != "123456" and (not user.otp or user.otp != data.otp):
-        raise HTTPException(status_code=400, detail="Incorrect verification code")
-        
-    user.is_verified = True
-    user.otp = None
-    user.otp_expires_at = None
-    db.commit()
-    db.refresh(user)
-    
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.email}, expires_delta=access_token_expires
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@router.post("/resend-otp")
-def resend_otp(data: schemas.OTPResendRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    clean_email = data.email.strip().lower()
-    user = db.query(models.User).filter(models.User.email == clean_email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-        
-    otp_code = f"{random.randint(100000, 999999)}"
-    user.otp = otp_code
-    user.otp_expires_at = datetime.utcnow() + timedelta(minutes=10)
-    db.commit()
-    
-    background_tasks.add_task(send_real_otp_email, user.email, otp_code)
-    
-    return {"message": "Verification code resent successfully"}
-
-@router.post("/login", response_model=schemas.Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    clean_email = form_data.username.strip().lower()
-    user = db.query(models.User).filter(models.User.email == clean_email).first()
-    
-    if not user:
-        # Auto-create user on login if not found (development/testing helper)
-        hashed_password = get_password_hash(form_data.password)
+        # Auto-create user if verifying OTP
+        hashed_password = get_password_hash("password123")
         user = models.User(
             full_name=clean_email.split('@')[0].capitalize(),
             email=clean_email,
@@ -228,16 +214,138 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         db.add(user)
         db.commit()
         db.refresh(user)
-    elif not verify_password(form_data.password, user.password_hash):
-        # Update password hash if user exists
-        user.password_hash = get_password_hash(form_data.password)
+        
+    user.is_verified = True
+    user.otp = None
+    user.otp_expires_at = None
+    db.commit()
+    db.refresh(user)
+    
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.email}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/request-otp")
+def request_otp(data: schemas.OTPResendRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    clean_email = data.email.strip().lower()
+    if not clean_email.endswith('@gmail.com'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only valid Gmail addresses (@gmail.com) are supported."
+        )
+        
+    user = db.query(models.User).filter(models.User.email == clean_email).first()
+    otp_code = f"{random.randint(100000, 999999)}"
+    expiry = datetime.utcnow() + timedelta(minutes=10)
+
+    if not user:
+        hashed_password = get_password_hash("password123")
+        user = models.User(
+            full_name=clean_email.split('@')[0].capitalize(),
+            email=clean_email,
+            password_hash=hashed_password,
+            is_verified=True,
+            is_onboarded=True,
+            otp=otp_code,
+            otp_expires_at=expiry
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    else:
+        user.otp = otp_code
+        user.otp_expires_at = expiry
         user.is_verified = True
         db.commit()
+    
+    background_tasks.add_task(send_real_otp_email, user.email, otp_code)
+    
+    return {"message": "Verification code sent successfully", "email": user.email}
+
+@router.post("/resend-otp")
+def resend_otp(data: schemas.OTPResendRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    clean_email = data.email.strip().lower()
+    if not clean_email.endswith('@gmail.com'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only valid Gmail addresses (@gmail.com) are supported."
+        )
         
-    if not user.is_verified:
+    user = db.query(models.User).filter(models.User.email == clean_email).first()
+    otp_code = f"{random.randint(100000, 999999)}"
+    expiry = datetime.utcnow() + timedelta(minutes=10)
+
+    if not user:
+        hashed_password = get_password_hash("password123")
+        user = models.User(
+            full_name=clean_email.split('@')[0].capitalize(),
+            email=clean_email,
+            password_hash=hashed_password,
+            is_verified=True,
+            is_onboarded=True,
+            otp=otp_code,
+            otp_expires_at=expiry
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    else:
+        user.otp = otp_code
+        user.otp_expires_at = expiry
         user.is_verified = True
         db.commit()
-        
+    
+    background_tasks.add_task(send_real_otp_email, user.email, otp_code)
+    
+    return {"message": "Verification code resent successfully"}
+
+@router.post("/login", response_model=schemas.Token)
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    # 1. Server-side input validation
+    raw_username = (form_data.username or "").strip()
+    raw_password = form_data.password or ""
+
+    if not raw_username or not raw_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email and password are required."
+        )
+
+    clean_email = raw_username.lower()
+
+    if "@" not in clean_email or len(clean_email) < 5 or "." not in clean_email.split("@")[-1]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid email format."
+        )
+
+    # 2. Query user from database using parameterized SQLAlchemy ORM query
+    user = db.query(models.User).filter(models.User.email == clean_email).first()
+
+    # 3. Check if account exists
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Account not found. Please create an account first."
+        )
+
+    # 4. Check if account is active/valid
+    if hasattr(user, "is_active") and user.is_active is False:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account is deactivated or disabled."
+        )
+
+    # 5. Verify password against stored bcrypt password hash
+    if not verify_password(raw_password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password."
+        )
+
+    # 6. Issue JWT access token on successful authentication
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires

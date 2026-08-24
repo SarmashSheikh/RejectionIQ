@@ -113,7 +113,10 @@ export default function Onboarding() {
         setStep(5);
       }
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Something went wrong. Please try again.');
+      const msg = err.response?.data?.detail 
+        ? (typeof err.response.data.detail === 'string' ? err.response.data.detail : JSON.stringify(err.response.data.detail))
+        : (err.message === 'Network Error' ? 'Cannot connect to backend server. Make sure backend is running.' : 'Failed to update onboarding profile. Please try again.');
+      toast.error(msg);
       console.error(err);
     } finally {
       setLoading(false);

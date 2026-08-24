@@ -13,6 +13,8 @@ import Dashboard from './pages/dashboard/Dashboard';
 import RecoverySprint from './pages/recovery/RecoverySprint';
 import Analytics from './pages/analytics/Analytics';
 import Profile from './pages/profile/Profile';
+import ResumeVault from './pages/profile/ResumeVault';
+import AccessSecurity from './pages/settings/AccessSecurity';
 import NewRejection from './pages/rejection/NewRejection';
 import DiagnosisResult from './pages/rejection/DiagnosisResult';
 
@@ -47,6 +49,8 @@ export default function App() {
               <Route path="/recovery" element={<RecoverySprint />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/resume" element={<ResumeVault />} />
+              <Route path="/settings" element={<AccessSecurity />} />
               <Route path="/rejection/new/step1" element={<NewRejection />} />
               <Route path="/rejection/diagnosis/:id" element={<DiagnosisResult />} />
             </Route>

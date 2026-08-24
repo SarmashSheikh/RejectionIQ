@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../../api/axios';
-import { BarChart3, TrendingUp, Users, Target, Sparkles, Building, BookOpen, ShieldCheck, AlertCircle, Award, Plus, X } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Target, Sparkles, Building, BookOpen, ShieldCheck, AlertCircle, Award, Plus, X, ArrowUpRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 export default function Analytics() {
@@ -239,120 +240,18 @@ export default function Analytics() {
                     </button>
                   </div>
 
-                  {dreamMode === 'custom' && !isEditingDream && (
-                    <button
-                      onClick={() => setIsEditingDream(true)}
-                      className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-250 text-slate-650 hover:text-slate-800 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer border-slate-200 shadow-sm"
+                  {dreamMode === 'custom' && (
+                    <Link
+                      to="/profile"
+                      className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-650 hover:text-slate-800 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer shadow-sm flex items-center gap-1"
                     >
-                      ⚙️ Edit
-                    </button>
+                      <span>Configure Goals</span> <ArrowUpRight size={12} />
+                    </Link>
                   )}
                 </div>
               </div>
 
-              {/* Editing Dream Goals Form Block */}
-              {isEditingDream ? (
-                <form onSubmit={handleDreamSave} className="space-y-4 text-xs font-bold text-slate-700">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Dream Company */}
-                    <div className="space-y-1">
-                      <label className="block text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Dream Company Name</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={dreamForm.dream_company}
-                        onChange={(e) => setDreamForm({ ...dreamForm, dream_company: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800 focus:outline-none focus:border-violet-500 transition-colors"
-                      />
-                    </div>
-                    {/* Dream CGPA */}
-                    <div className="space-y-1">
-                      <label className="block text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Required CGPA Target</label>
-                      <input 
-                        type="number" 
-                        step="0.01"
-                        required
-                        value={dreamForm.dream_cgpa}
-                        onChange={(e) => setDreamForm({ ...dreamForm, dream_cgpa: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800 focus:outline-none focus:border-violet-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Dream Internships */}
-                    <div className="space-y-1">
-                      <label className="block text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Required Internships</label>
-                      <input 
-                        type="number" 
-                        required
-                        value={dreamForm.dream_internships}
-                        onChange={(e) => setDreamForm({ ...dreamForm, dream_internships: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800 focus:outline-none focus:border-violet-500 transition-colors"
-                      />
-                    </div>
-                    {/* Dream Projects */}
-                    <div className="space-y-1">
-                      <label className="block text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Required Projects</label>
-                      <input 
-                        type="number" 
-                        required
-                        value={dreamForm.dream_projects}
-                        onChange={(e) => setDreamForm({ ...dreamForm, dream_projects: e.target.value })}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800 focus:outline-none focus:border-violet-500 transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Dream Skills Required */}
-                  <div className="space-y-1">
-                    <label className="block text-[9px] text-slate-400 font-extrabold uppercase tracking-widest">Required Tools & Skills</label>
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {dreamForm.dream_skills.map((skill, index) => (
-                        <span key={index} className="bg-violet-50 text-violet-750 border border-violet-100 px-2 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1.5">
-                          {skill}
-                          <X size={10} className="cursor-pointer text-violet-500 hover:text-violet-900" onClick={() => removeDreamSkill(skill)} />
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        placeholder="Add required skill (e.g. AWS, React)"
-                        value={skillInput}
-                        onChange={(e) => setSkillInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addDreamSkill())}
-                        className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-slate-800 focus:outline-none focus:border-violet-500 transition-colors"
-                      />
-                      <button 
-                        type="button" 
-                        onClick={addDreamSkill} 
-                        className="px-3 bg-violet-50 text-violet-600 border border-violet-200 rounded-lg hover:bg-violet-600 hover:text-white transition-all cursor-pointer"
-                      >
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Form Submission Buttons */}
-                  <div className="flex gap-2 justify-end pt-3 border-t border-slate-100 mt-4">
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingDream(false)}
-                      className="px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 font-bold transition-all cursor-pointer text-xs"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-bold transition-all shadow-sm cursor-pointer text-xs"
-                    >
-                      Save Target Benchmarks 🎯
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="space-y-6">
+              <div className="space-y-6">
                   {dreamMode === 'cohort' && (
                     <div className="flex items-center gap-2 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
                       <Building className="w-4 h-4 text-slate-400 shrink-0" />
@@ -534,7 +433,6 @@ export default function Analytics() {
                     </div>
                   )}
                 </div>
-              )}
             </div>
           </motion.div>
         </div>

@@ -24,6 +24,9 @@ def seed_data():
                 if "is_verified" not in columns:
                     conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE;"))
                     print("Added 'is_verified' column to 'users' table.")
+                if "is_active" not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT TRUE;"))
+                    print("Added 'is_active' column to 'users' table.")
                 if "otp" not in columns:
                     conn.execute(text("ALTER TABLE users ADD COLUMN otp VARCHAR(6);"))
                     print("Added 'otp' column to 'users' table.")
@@ -62,6 +65,7 @@ def seed_data():
         target_roles=["Software Engineer", "Backend Developer"],
         is_onboarded=True,
         is_verified=True,
+        is_active=True,
         streak_count=5,
         total_rejections=8,
         resilience_score=7.2

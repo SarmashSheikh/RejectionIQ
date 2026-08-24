@@ -132,8 +132,8 @@ export default function Dashboard() {
   };
 
 
-  // Safe username extraction
-  const userName = user?.email ? user.email.split('@')[0] : "Technologist";
+  // Safe username extraction prioritizing full name
+  const userName = user?.full_name || (user?.email ? user.email.split('@')[0] : "Technologist");
 
   // Recovery progress math
   const progressRatio = stats.tasks_total ? Math.round((stats.tasks_done / stats.tasks_total) * 100) : 0;

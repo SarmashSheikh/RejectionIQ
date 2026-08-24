@@ -20,6 +20,8 @@ import DiagnosisResult from './pages/rejection/DiagnosisResult';
 import RecoverySprint from './pages/recovery/RecoverySprint';
 import Analytics from './pages/analytics/Analytics';
 import Profile from './pages/profile/Profile';
+import ResumeVault from './pages/profile/ResumeVault';
+import AccessSecurity from './pages/settings/AccessSecurity';
 import MainLayout from './components/MainLayout';
 
 export default function App() {
@@ -38,7 +40,8 @@ export default function App() {
             <Route path="/recovery" element={<RecoverySprint />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Navigate to="/profile?tab=security" replace />} />
+            <Route path="/resume" element={<ResumeVault />} />
+            <Route path="/settings" element={<AccessSecurity />} />
             
             <Route path="/rejection/new/step1" element={<NewRejection />} />
             <Route path="/rejection/diagnosis/:id" element={<DiagnosisResult />} />

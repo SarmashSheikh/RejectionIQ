@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     
     # Database (SQLite default for local setup, PostgreSQL supported via env)
-    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH}").strip()
     
     # JWT Auth
     SECRET_KEY: str = "super_secret_key_change_in_production"
@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     SMTP_USERNAME: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
     SMTP_FROM: Optional[str] = None
+
+    # Free Email API Keys (Resend / Brevo / SendGrid)
+    RESEND_API_KEY: Optional[str] = None
+    BREVO_API_KEY: Optional[str] = None
 
     # Anthropic Claude API Key
     ANTHROPIC_API_KEY: Optional[str] = None

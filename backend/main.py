@@ -44,6 +44,9 @@ async def startup_event():
                 if "is_verified" not in columns:
                     conn.execute(text("ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT FALSE;"))
                     logger.info("Added 'is_verified' column to 'users' table.")
+                if "is_active" not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN is_active BOOLEAN DEFAULT TRUE;"))
+                    logger.info("Added 'is_active' column to 'users' table.")
                 if "otp" not in columns:
                     conn.execute(text("ALTER TABLE users ADD COLUMN otp VARCHAR(6);"))
                     logger.info("Added 'otp' column to 'users' table.")

@@ -228,11 +228,11 @@ export default function Profile() {
 
               {/* Resume Vault */}
               <button 
-                onClick={() => setActiveTab('resume')}
+                onClick={() => navigate('/resume')}
                 className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-slate-50 transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-3 text-slate-850">
-                  <FileText size={16} className="text-brand-550 text-brand-500" />
+                  <FileText size={16} className="text-brand-500" />
                   <span className="text-xs font-bold">Resume Document Vault</span>
                 </div>
                 <ChevronRight size={14} className="text-slate-350" />
@@ -240,12 +240,12 @@ export default function Profile() {
 
               {/* Security */}
               <button 
-                onClick={() => setActiveTab('security')}
+                onClick={() => navigate('/settings')}
                 className="w-full px-4 py-3.5 flex items-center justify-between text-left hover:bg-slate-50 transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-3 text-slate-850">
                   <Shield size={16} className="text-brand-500" />
-                  <span className="text-xs font-bold">Security Credentials</span>
+                  <span className="text-xs font-bold">Security Credentials & Settings</span>
                 </div>
                 <ChevronRight size={14} className="text-slate-350" />
               </button>
