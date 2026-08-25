@@ -5,7 +5,8 @@ const RENDER_URL = 'https://rejectioniq.onrender.com/api';
 // Candidate URL list builder in priority order
 export const getCandidateUrls = () => {
   const candidates = [];
-  
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
   // 1. Explicit env variable
   if (import.meta.env.VITE_API_URL) {
     candidates.push(import.meta.env.VITE_API_URL);
@@ -19,8 +20,8 @@ export const getCandidateUrls = () => {
   // 3. Render cloud production backend (primary database for cross-device sync)
   candidates.push(RENDER_URL);
 
-  // 4. Local dev fallbacks
-  if (typeof window !== 'undefined') {
+  // 4. Local dev fallbacks (only if not on HTTPS web deployment to avoid Mixed Content errors)
+  if (typeof window !== 'undefined' && !isHttps) {
     const isCapacitorNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
     const userAgent = navigator.userAgent || '';
     const isAndroid = isCapacitorNative || /android/i.test(userAgent) || window.location.href.startsWith('capacitor://');
@@ -41,12 +42,12 @@ export const getBaseURL = () => {
   if (custom) return custom;
   
   const candidates = getCandidateUrls();
-  return candidates[0] || 'http://10.0.2.2:8000/api';
+  return candidates[0] || RENDER_URL;
 };
 
 const api = axios.create({
   baseURL: getBaseURL(),
-  timeout: 6000,
+  timeout: 35000, // 35 seconds to support Render cloud backend cold starts
 });
 
 export const setCustomApiUrl = (url) => {
@@ -114,3 +115,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+
